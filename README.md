@@ -1,0 +1,2 @@
+# UE_Wwise_AudioCaster
+在UE编辑器中实现类似Wwise中Soundcaster的效果，能够调整RTPC、Switch等
