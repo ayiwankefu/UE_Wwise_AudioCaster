@@ -21,7 +21,7 @@ struct FAudioCasterStruct
 
 	//Value has to greater than 0, for it is used in a timer
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AudioCaster")
-	float ExecuteDelayTime = 0.01f;
+	float ExecuteDelayTime = 0.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AudioCaster")
 	UAkAudioEvent* AkEvent;
@@ -61,8 +61,8 @@ UCLASS()
 class AUDIOTOOLS_API AAudioCaster : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	AAudioCaster();
 
 protected:
@@ -71,13 +71,13 @@ protected:
 	void AC_SetRtpc(UAkRtpc* AkRtpc, float Value, int32 InterpolationTimeMs);
 	void AC_SetSwitch(UAkSwitchValue* AkSwitchValue);
 	void AC_PlayEventArray(
-							UAkAudioEvent* AkEvent,
-							UAkRtpc* AkRtpc,
-							float Value,
-							int32 InterpolationTimeMs,
-							UAkSwitchValue* AkSwitchValue, 
-							class FOnAkPostEventCallback PostEventCallback);
-public:	
+		UAkAudioEvent* AkEvent,
+		UAkRtpc* AkRtpc,
+		float Value,
+		int32 InterpolationTimeMs,
+		UAkSwitchValue* AkSwitchValue,
+		class FOnAkPostEventCallback PostEventCallback);
+public:
 	virtual void Tick(float DeltaTime) override;
 
 	UPROPERTY(EditAnywhere, Category = "AudioCaster")

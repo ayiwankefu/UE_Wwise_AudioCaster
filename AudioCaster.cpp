@@ -8,7 +8,7 @@
 
 AAudioCaster::AAudioCaster()
 {
- 	
+
 	PrimaryActorTick.bCanEverTick = true;
 	AkComponent = CreateDefaultSubobject<UAkComponent>(TEXT("AkComponent"));
 	RootComponent = AkComponent;
@@ -55,7 +55,7 @@ void AAudioCaster::AC_PlayEventArray(
 	UAkRtpc* AkRtpc,
 	float Value,
 	int32 InterpolationTimeMs,
-	UAkSwitchValue* AkSwitchValue, 
+	UAkSwitchValue* AkSwitchValue,
 	class FOnAkPostEventCallback PostEventCallback)
 {
 	//AC_SetRtpc and AC_SetSwitch needs to be before AC_PlayEvent
@@ -92,7 +92,7 @@ void AAudioCaster::SetSwitchValueOnChanged()
 {
 	for (FAudioCasterStruct CasterSection : AudioCasterArray)
 	{
-		//check if pointer exist, because we're using GetWwiseName() function to store switch name
+		//Check if pointer exist, because we're using GetWwiseName() function to store switch name
 		if (CasterSection.AkSwitchValue)
 		{
 			FName AkSwitchName = CasterSection.AkSwitchValue->GetWwiseName();
@@ -108,7 +108,7 @@ void AAudioCaster::SetSwitchValueOnChanged()
 //Buttons
 void AAudioCaster::PlayButton()
 {
-	
+
 	if (AudioCasterArray.Num() != 0)
 	{
 		FAudioCasterStruct FirstCasterSection = AudioCasterArray[0];
@@ -118,23 +118,6 @@ void AAudioCaster::PlayButton()
 		AC_SetSwitch(FirstCasterSection.AkSwitchValue);
 		AC_PlayEvent(FirstCasterSection.AkEvent, FirstCasterSection.PostEventCallback);
 	}
-	/*for (FAudioCasterStruct CasterSection : AudioCasterArray)
-	{
-		
-		/ *FTimerDelegate Delegate = FTimerDelegate::CreateLambda([&]() {
-			if (IsValid(CasterSection.AkEvent))
-			{
-				UE_LOG(LogTemp, Warning, TEXT("1111"));
-			}
-			});* /
-		//FTimerDelegate Delegate = FTimerDelegate::CreateUObject(this, &AAudioCaster::AC_PlayEvent, CasterSection.AkEvent);
-		FTimerDelegate Delegate = FTimerDelegate::CreateUObject(this, &AAudioCaster::AC_PlayEvent, CasterSection.AkEvent);
-		if (GetWorld())
-		{
-			GetWorld()->GetTimerManager().SetTimer(CasterSection.TimeHandle, Delegate, CasterSection.ExecuteDelayTime, false);
-		}
-		//这行能正常运行UAkGameplayStatics::PostEvent(CasterSection.AkEvent, this, 1, PostEventCallback);
-	}*/
 }
 
 
@@ -143,18 +126,27 @@ void AAudioCaster::PlayArrayButton()
 	for (FAudioCasterStruct CasterSection : AudioCasterArray)
 	{
 		FTimerDelegate Delegate = FTimerDelegate::CreateUObject(
-			this, 
-			&AAudioCaster::AC_PlayEventArray, 
-			CasterSection.AkEvent, 
-			CasterSection.AkRtpc, 
-			CasterSection.RtpcValue, 
-			CasterSection.InterpolationTimeMs, 
-			CasterSection.AkSwitchValue, 
+			this,
+			&AAudioCaster::AC_PlayEventArray,
+			CasterSection.AkEvent,
+			CasterSection.AkRtpc,
+			CasterSection.RtpcValue,
+			CasterSection.InterpolationTimeMs,
+			CasterSection.AkSwitchValue,
 			CasterSection.PostEventCallback);
 		if (GetWorld())
 		{
-			GetWorld()->GetTimerManager().ClearTimer(CasterSection.TimeHandle);
-			GetWorld()->GetTimerManager().SetTimer(CasterSection.TimeHandle, Delegate, CasterSection.ExecuteDelayTime, false);
+			if (CasterSection.ExecuteDelayTime < 0)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("ExexuteDelayTime can't be a negative number!!! Please check!!!"))
+			}
+			else
+			{
+				//SetTimer() param requires a float type InRate, which has to greater than zero.
+				float ExexuteDelayTime = 0.01f + CasterSection.ExecuteDelayTime;
+				GetWorld()->GetTimerManager().ClearTimer(CasterSection.TimeHandle);
+				GetWorld()->GetTimerManager().SetTimer(CasterSection.TimeHandle, Delegate, ExexuteDelayTime, false);
+			}
 		}
 	}
 }
@@ -177,5 +169,3 @@ void AAudioCaster::ShowRadius()
 		}
 	}
 }
-
-
