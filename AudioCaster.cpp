@@ -3,21 +3,26 @@
 #include "AkAudioEvent.h"
 #include "AkSwitchValue.h"
 #include "AkComponent.h"
+#include "AkAmbientSound.h"
 #include "DrawDebugHelpers.h"
 #include "TimerManager.h"
+
 
 AAudioCaster::AAudioCaster()
 {
 
 	PrimaryActorTick.bCanEverTick = true;
+	AkAudioDevice = FAkAudioDevice::Get();
 	AkComponent = CreateDefaultSubobject<UAkComponent>(TEXT("AkComponent"));
 	RootComponent = AkComponent;
+	
 }
 
 
 void AAudioCaster::BeginPlay()
 {
 	Super::BeginPlay();
+	
 }
 
 void AAudioCaster::Tick(float DeltaTime)
@@ -108,7 +113,6 @@ void AAudioCaster::SetSwitchValueOnChanged()
 //Buttons
 void AAudioCaster::PlayButton()
 {
-
 	if (AudioCasterArray.Num() != 0)
 	{
 		FAudioCasterStruct FirstCasterSection = AudioCasterArray[0];
@@ -154,6 +158,7 @@ void AAudioCaster::PlayArrayButton()
 void AAudioCaster::StopButton()
 {
 	UAkGameplayStatics::StopActor(this);
+	
 }
 
 
@@ -167,5 +172,42 @@ void AAudioCaster::ShowRadius()
 		{
 			DrawDebugSphere(GetWorld(), this->GetActorLocation(), radius * RadiosScalingFactor, 12, FColor::Red, false, 3.f, 0, 20.f * RadiosScalingFactor);
 		}
+	}
+}
+
+void AAudioCaster::EnableMonitoring()
+{
+	if (Microphone != nullptr && Loudspeaker != nullptr)
+	{
+		MicrophoneAkComponent = Microphone->AkComponent;
+		LoudspeakerAkComponent = Loudspeaker->AkComponent;
+
+		//发声体的听者设为PlayerCamera
+		UAkComponentSet& DefaultListeners = AkAudioDevice->GetDefaultListeners();
+		TArray<TWeakObjectPtr<UAkComponent>> ListenerArray;
+		for (const TWeakObjectPtr<UAkComponent>& Listener : DefaultListeners)
+		{
+			ListenerArray.Add(Listener);
+		}
+		AkAudioDevice->SetListeners(AkComponent, ListenerArray);
+
+
+		//发声体的听者设为Microphone，通过SetAuxSends
+		TArray<AkAuxSendValue> AuxSendValues;
+		AkGameObjectID MicrophoneID = Microphone->AkComponent->GetAkGameObjectID();
+		AkAuxSendValue _auxSend;
+		_auxSend.auxBusID = AK::SoundEngine::GetIDFromString("Microphone");
+		_auxSend.fControlValue = 1.f;
+		_auxSend.listenerID = MicrophoneID;
+		AuxSendValues.Add(_auxSend);
+		AkAudioDevice->SetAuxSends(AkComponent, AuxSendValues);
+
+		//Microphone的听者设为Loudspeaker
+		TArray<TWeakObjectPtr<UAkComponent>> listenerMicrophoneToLoudspeaker;
+		listenerMicrophoneToLoudspeaker.Add(LoudspeakerAkComponent);
+		AkAudioDevice->SetListeners(MicrophoneAkComponent, listenerMicrophoneToLoudspeaker);
+
+		//Loudspeaker的听者设为PlayerCamera
+		AkAudioDevice->SetListeners(LoudspeakerAkComponent, ListenerArray);
 	}
 }

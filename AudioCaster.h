@@ -12,7 +12,9 @@ class UAkAudioEvent;
 class UAkRtpc;
 class UAkStateValue;
 class UAkSwitchValue;
+class AAkAmbientSound;
 struct FTimerHandle;
+
 
 USTRUCT(BlueprintType)
 struct FAudioCasterStruct
@@ -58,7 +60,7 @@ struct FAudioCasterStruct
 };
 
 UCLASS()
-class AUDIOTOOLS_API AAudioCaster : public AActor
+class AUDIOTEST_API AAudioCaster : public AActor
 {
 	GENERATED_BODY()
 
@@ -98,6 +100,9 @@ public:
 	//Only show the radius of the first element
 	UFUNCTION(BlueprintCallable, CallInEditor, Category = "AudioCaster")
 	void ShowRadius();
+	//Enable monitoring emitter using multiple listeners and routing
+	UFUNCTION(BlueprintCallable, CallInEditor, Category = "AudioCaster")
+	void EnableMonitoring();
 
 	//Declare a delegate callback function
 	UFUNCTION()
@@ -112,4 +117,13 @@ public:
 private:
 	UPROPERTY(VisibleAnywhere)
 	UAkComponent* AkComponent;
+	FAkAudioDevice* AkAudioDevice;
+
+	UPROPERTY(EditAnywhere, Category = "Spy-Microphone")
+	AAkAmbientSound* Microphone;
+	UPROPERTY(EditAnywhere, Category = "Spy-Loudspeaker")
+	AAkAmbientSound* Loudspeaker;
+
+	UAkComponent* MicrophoneAkComponent;
+	UAkComponent* LoudspeakerAkComponent;
 };
