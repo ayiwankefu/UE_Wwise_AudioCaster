@@ -184,12 +184,12 @@ void AAudioCaster::EnableMonitoring()
 
 		//发声体的听者设为PlayerCamera
 		UAkComponentSet& DefaultListeners = AkAudioDevice->GetDefaultListeners();
-		TArray<TWeakObjectPtr<UAkComponent>> ListenerArray;
+		TArray<UAkComponent*> ListenerArray;
 		for (const TWeakObjectPtr<UAkComponent>& Listener : DefaultListeners)
 		{
-			ListenerArray.Add(Listener);
+			ListenerArray.Add(Listener.Get());
 		}
-		AkAudioDevice->SetListeners(AkComponent, ListenerArray);
+		AkComponent->SetListeners(ListenerArray);
 
 
 		//发声体的听者设为Microphone，通过SetAuxSends
@@ -203,11 +203,12 @@ void AAudioCaster::EnableMonitoring()
 		AkAudioDevice->SetAuxSends(AkComponent, AuxSendValues);
 
 		//Microphone的听者设为Loudspeaker
-		TArray<TWeakObjectPtr<UAkComponent>> listenerMicrophoneToLoudspeaker;
+		TArray<UAkComponent*> listenerMicrophoneToLoudspeaker;
 		listenerMicrophoneToLoudspeaker.Add(LoudspeakerAkComponent);
-		AkAudioDevice->SetListeners(MicrophoneAkComponent, listenerMicrophoneToLoudspeaker);
+		MicrophoneAkComponent->SetListeners(listenerMicrophoneToLoudspeaker);
 
 		//Loudspeaker的听者设为PlayerCamera
-		AkAudioDevice->SetListeners(LoudspeakerAkComponent, ListenerArray);
+		LoudspeakerAkComponent->SetListeners(ListenerArray);
+		LoudspeakerAkComponent->SetListeners(ListenerArray);
 	}
 }
